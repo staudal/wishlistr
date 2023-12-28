@@ -40,7 +40,7 @@ export default function DashboardRoute({ session, wishlists }: Props) {
 	}
 
 	return (
-		<div className="container my-8">
+		<div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
 			<div className="h-full flex-1 flex-col space-y-8 flex">
 				<div className="flex items-center justify-between space-y-2">
 					<div>
