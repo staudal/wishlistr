@@ -1,14 +1,14 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import DashboardRoute from './routes/Dashboard';
-import { useEffect, useState } from 'react';
-import { Session } from '@supabase/supabase-js';
+import { useEffect } from 'react';
 import { wishlistSchema } from './data/schema';
 import { supabase } from './lib/utils';
 import { z } from 'zod';
+import { Toaster } from '@/components/ui/sonner';
+import { useStore } from './data/store';
 
 function App() {
-	const [session, setSession] = useState<Session | null>(null);
-	const [wishlists, setWishlists] = useState<z.infer<typeof wishlistSchema>[]>([]);
+	const { setSession, setWishlists } = useStore();
 
 	async function getWishlists(user_id: string) {
 		const { data, error } = await supabase.from('wishlists').select('*').eq('user_id', user_id);
@@ -45,11 +45,13 @@ function App() {
 			authListener?.subscription.unsubscribe();
 		};
 	}, []);
+
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<DashboardRoute session={session} wishlists={wishlists} />} />
+				<Route path="/" element={<DashboardRoute />} />
 			</Routes>
+			<Toaster position="top-center" />
 		</BrowserRouter>
 	);
 }

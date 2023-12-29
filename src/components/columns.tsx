@@ -57,10 +57,10 @@ export const columns: ColumnDef<Wishlist>[] = [
 	},
 	{
 		id: 'actions',
-		cell: () => {
+		cell: ({ row }) => {
 			return (
 				<div className="flex justify-end space-x-2">
-					<DataTableRowActions />
+					<DataTableRowActions id={row.original.id} />
 				</div>
 			);
 		},

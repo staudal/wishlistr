@@ -10,14 +10,12 @@ import {
 	DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useStore } from '@/data/store';
 import { supabase } from '@/lib/utils';
-import { Session } from '@supabase/supabase-js';
 
-interface Props {
-	session: Session;
-}
+export function UserNav() {
+	const { session } = useStore();
 
-export function UserNav({ session }: Props) {
 	async function handleLogout() {
 		await supabase.auth.signOut();
 	}

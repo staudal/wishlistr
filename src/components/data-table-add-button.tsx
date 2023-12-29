@@ -1,16 +1,26 @@
-import * as React from 'react';
-
-import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { cn, supabase } from '@/lib/utils';
 import { useMediaQuery } from 'usehooks-ts';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { categories } from '@/data/data';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { toast } from 'sonner';
+import { useStore } from '@/data/store';
+import { DataTableAddCategory } from './data-table-add-category';
 
 export function DataTableAddButton() {
-	const [open, setOpen] = React.useState(false);
+	const [open, setOpen] = useState(false);
 	const isDesktop = useMediaQuery('(min-width: 768px)');
+
+	function onClose() {
+		setOpen(false);
+	}
 
 	if (isDesktop) {
 		return (
@@ -22,10 +32,10 @@ export function DataTableAddButton() {
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
-						<DialogTitle>Edit profile</DialogTitle>
-						<DialogDescription>Make changes to your profile here. Click save when you're done.</DialogDescription>
+						<DialogTitle>Create a new wishlist</DialogTitle>
+						<DialogDescription>Fill in the form below to create a new wishlist.</DialogDescription>
 					</DialogHeader>
-					<ProfileForm />
+					<ProfileForm onClose={onClose} />
 				</DialogContent>
 			</Dialog>
 		);
@@ -40,10 +50,10 @@ export function DataTableAddButton() {
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader className="text-left">
-					<DrawerTitle>Edit profile</DrawerTitle>
-					<DrawerDescription>Make changes to your profile here. Click save when you're done.</DrawerDescription>
+					<DrawerTitle>Create a new wishlist</DrawerTitle>
+					<DrawerDescription>Fill in the form below to create a new wishlist.</DrawerDescription>
 				</DrawerHeader>
-				<ProfileForm className="px-4" />
+				<ProfileForm onClose={onClose} className="px-4" />
 				<DrawerFooter className="pt-2">
 					<DrawerClose asChild>
 						<Button variant="outline">Cancel</Button>
@@ -54,18 +64,45 @@ export function DataTableAddButton() {
 	);
 }
 
-function ProfileForm({ className }: React.ComponentProps<'form'>) {
+interface ProfileFormProps {
+	className?: string;
+	onClose: () => void;
+}
+
+function ProfileForm({ className, onClose }: ProfileFormProps) {
+	const { session, wishlists, setWishlists } = useStore();
+	const [open, setOpen] = useState(false);
+	const [title, setTitle] = useState('');
+	const [value, setValue] = useState('');
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		const { data, error } = await supabase
+			.from('wishlists')
+			.insert([{ title, category: value, user_id: session?.user.id }])
+			.select('*');
+		if (error) {
+			toast.error('Error creating wishlist');
+		} else if (data) {
+			toast.success('Wishlist created');
+			onClose();
+			setWishlists([...wishlists, data[0]]);
+		} else {
+			console.log('No data or error');
+		}
+	}
+
 	return (
-		<form className={cn('grid items-start gap-4', className)}>
+		<form className={cn('grid items-start gap-4', className)} onSubmit={handleSubmit}>
 			<div className="grid gap-2">
-				<Label htmlFor="email">Email</Label>
-				<Input type="email" id="email" defaultValue="shadcn@example.com" />
+				<Label htmlFor="title">Title</Label>
+				<Input onChange={e => setTitle(e.target.value)} type="text" id="title" placeholder="Christmas 2024" required />
 			</div>
 			<div className="grid gap-2">
-				<Label htmlFor="username">Username</Label>
-				<Input id="username" defaultValue="@shadcn" />
+				<Label htmlFor="username">Category</Label>
+				<DataTableAddCategory value={value} setValue={setValue} title="Category" options={categories} />
 			</div>
-			<Button type="submit">Save changes</Button>
+			<Button type="submit">Create wishlist</Button>
 		</form>
 	);
 }
