@@ -6,10 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
-import { Check, ChevronsUpDown } from 'lucide-react';
 import { categories } from '@/data/data';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { DataTableAddCategory } from './data-table-add-category';
@@ -71,7 +68,6 @@ interface ProfileFormProps {
 
 function ProfileForm({ className, onClose }: ProfileFormProps) {
 	const { session, wishlists, setWishlists } = useStore();
-	const [open, setOpen] = useState(false);
 	const [title, setTitle] = useState('');
 	const [value, setValue] = useState('');
 
