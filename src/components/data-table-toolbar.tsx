@@ -23,11 +23,11 @@ export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>)
 					placeholder="Filter wishlists..."
 					value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
 					onChange={event => table.getColumn('title')?.setFilterValue(event.target.value)}
-					className="h-8 w-[150px] lg:w-[250px]"
+					className="h-9 w-[150px] lg:w-[250px]"
 				/>
 				{table.getColumn('category') && <DataTableFacetedFilter column={table.getColumn('category')} title="Category" options={categories} />}
 				{isFiltered && (
-					<Button variant="ghost" onClick={() => table.resetColumnFilters()} className="sm:flex hidden h-8 px-2 lg:px-3">
+					<Button variant="ghost" onClick={() => table.resetColumnFilters()} size="default" className="sm:flex hidden px-2 lg:px-3">
 						Reset
 						<Cross2Icon className="ml-2 h-4 w-4" />
 					</Button>

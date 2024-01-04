@@ -25,7 +25,7 @@ export function DataTableAddCategory({ title, options, value, setValue }: DataTa
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button variant="outline" size="sm" className="h-8 border-dashed">
+				<Button variant="outline" size="default" className="border-dashed">
 					<PlusCircledIcon className="mr-2 h-4 w-4" />
 					{title}
 					{value && (

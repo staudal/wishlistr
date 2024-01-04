@@ -23,7 +23,7 @@ export function DataTableAddButton() {
 		return (
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogTrigger asChild>
-					<Button size="sm" variant="default">
+					<Button size="default" variant="default">
 						Add wishlist
 					</Button>
 				</DialogTrigger>
@@ -41,7 +41,7 @@ export function DataTableAddButton() {
 	return (
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
-				<Button size="sm" variant="default">
+				<Button size="default" variant="default">
 					Add wishlist
 				</Button>
 			</DrawerTrigger>
@@ -73,6 +73,24 @@ function ProfileForm({ className, onClose }: ProfileFormProps) {
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
+
+		if (title.trim().length === 0 || !title) {
+			toast.error('Please enter a title');
+			return;
+		}
+
+		// only allow letters, spaces, dashes and numbers
+		const regex = /^[a-zA-Z0-9- ]*$/;
+		if (!regex.test(title)) {
+			toast.error('Your title can only contain letters, numbers, spaces and dashes');
+			return;
+		}
+
+		if (!value) {
+			toast.error('Please select a category');
+			return;
+		}
+
 		const { data, error } = await supabase
 			.from('wishlists')
 			.insert([{ title, category: value, user_id: session?.user.id }])
@@ -92,7 +110,7 @@ function ProfileForm({ className, onClose }: ProfileFormProps) {
 		<form className={cn('grid items-start gap-4', className)} onSubmit={handleSubmit}>
 			<div className="grid gap-2">
 				<Label htmlFor="title">Title</Label>
-				<Input onChange={e => setTitle(e.target.value)} type="text" id="title" placeholder="Christmas 2024" required />
+				<Input onChange={e => setTitle(e.target.value)} type="text" id="title" placeholder="Christmas 2024" />
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="username">Category</Label>

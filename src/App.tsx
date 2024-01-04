@@ -8,11 +8,16 @@ import { Toaster } from '@/components/ui/sonner';
 import { useStore } from './data/store';
 
 function App() {
-	const { setSession, setWishlists } = useStore();
+	const { setSession, setWishlists, setLoading } = useStore();
 
 	async function getWishlists(user_id: string) {
+		setLoading(true);
 		const { data, error } = await supabase.from('wishlists').select('*').eq('user_id', user_id);
-		if (error) console.log('Error fetching wishlists: ', error);
+		if (error) {
+			console.log('Error getting wishlists: ', error);
+			setLoading(false);
+			return;
+		}
 		if (data) {
 			const wishlistsWithWishes: z.infer<typeof wishlistSchema>[] = [];
 			for (const wishlist of data) {
@@ -22,6 +27,7 @@ function App() {
 				}
 			}
 			setWishlists(wishlistsWithWishes);
+			setLoading(false);
 		}
 	}
 

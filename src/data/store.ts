@@ -8,6 +8,8 @@ type Store = {
 	setSession: (session: Session | null) => void;
 	wishlists: z.infer<typeof wishlistSchema>[];
 	setWishlists: (wishlists: z.infer<typeof wishlistSchema>[]) => void;
+	loading: boolean;
+	setLoading: (loading: boolean) => void;
 };
 
 export const useStore = create<Store>(set => ({
@@ -15,4 +17,6 @@ export const useStore = create<Store>(set => ({
 	setSession: session => set({ session }),
 	wishlists: [],
 	setWishlists: wishlists => set({ wishlists }),
+	loading: false,
+	setLoading: loading => set({ loading }),
 }));

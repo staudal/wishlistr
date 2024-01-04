@@ -15,7 +15,7 @@ export default function DashboardRoute() {
 
 	if (!session) {
 		return (
-			<div className="container my-8">
+			<div className="mx-auto max-w-7xl p-4 md:p-8">
 				<div className="flex items-center justify-between space-y-2">
 					<div>
 						<h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>

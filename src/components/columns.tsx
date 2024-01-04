@@ -45,7 +45,7 @@ export const columns: ColumnDef<Wishlist>[] = [
 			}
 
 			return (
-				<div className="flex w-[100px] items-center">
+				<div className="flex w-auto items-center">
 					{category.icon && <category.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
 					<span>{category.label}</span>
 				</div>
