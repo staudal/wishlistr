@@ -58,7 +58,3 @@
 		@apply bg-background text-foreground;
 	}
 }
-
-body {
-	touch-action: pan-x pan-y;
-}
