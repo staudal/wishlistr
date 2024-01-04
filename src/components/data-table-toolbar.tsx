@@ -23,7 +23,7 @@ export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>)
 					placeholder="Filter wishlists..."
 					value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
 					onChange={event => table.getColumn('title')?.setFilterValue(event.target.value)}
-					className="h-9 w-[150px] lg:w-[250px]"
+					className="h-9 w-[150px] lg:w-[250px] font-base"
 				/>
 				{table.getColumn('category') && <DataTableFacetedFilter column={table.getColumn('category')} title="Category" options={categories} />}
 				{isFiltered && (
