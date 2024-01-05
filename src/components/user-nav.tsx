@@ -12,12 +12,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useStore } from '@/data/store';
 import { supabase } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export function UserNav() {
 	const { session } = useStore();
+	const navigate = useNavigate();
 
 	async function handleLogout() {
 		await supabase.auth.signOut();
+		navigate('/');
 	}
 
 	return (

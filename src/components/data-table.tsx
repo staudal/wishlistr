@@ -90,7 +90,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
 						)}
 						{table.getRowModel().rows?.length === 0 && !loading && (
 							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
+								<TableCell colSpan={columns.length} className="h-20 text-center">
 									No results found.
 								</TableCell>
 							</TableRow>

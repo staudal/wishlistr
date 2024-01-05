@@ -8,6 +8,18 @@ export const wishlistSchema = z.object({
 	title: z.string(),
 	category: z.string(),
 	user_id: z.string(),
+	wishes: z.array(
+		z.object({
+			id: z.string(),
+			title: z.string(),
+			description: z.string(),
+			price: z.number(),
+			link_url: z.string(),
+			img_url: z.string(),
+			created_at: z.date(),
+			quantity: z.number(),
+		})
+	),
 });
 
 export type Wishlist = z.infer<typeof wishlistSchema>;

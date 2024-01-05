@@ -6,13 +6,18 @@ import { supabase } from './lib/utils';
 import { z } from 'zod';
 import { Toaster } from '@/components/ui/sonner';
 import { useStore } from './data/store';
+import WishlistRoute from './routes/Wishlist';
+import LayoutRoute from './routes/LayoutRoute';
 
 function App() {
 	const { setSession, setWishlists, setLoading } = useStore();
 
 	async function getWishlists(user_id: string) {
 		setLoading(true);
-		const { data, error } = await supabase.from('wishlists').select('*').eq('user_id', user_id);
+		const { data, error } = await supabase
+			.from('wishlists')
+			.select('*, wishes(*)')
+			.eq('user_id', user_id);
 		if (error) {
 			console.log('Error getting wishlists: ', error);
 			setLoading(false);
@@ -21,7 +26,10 @@ function App() {
 		if (data) {
 			const wishlistsWithWishes: z.infer<typeof wishlistSchema>[] = [];
 			for (const wishlist of data) {
-				const { data: wishes } = await supabase.from('wishes').select('*').eq('wishlist_id', wishlist.id);
+				const { data: wishes } = await supabase
+					.from('wishes')
+					.select('*')
+					.eq('wishlist_id', wishlist.id);
 				if (wishes) {
 					wishlistsWithWishes.push({ ...wishlist, wishes });
 				}
@@ -55,7 +63,10 @@ function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<DashboardRoute />} />
+				<Route path="/" element={<LayoutRoute />}>
+					<Route index element={<DashboardRoute />} />
+					<Route path="wishlist/:id" element={<WishlistRoute />} />
+				</Route>
 			</Routes>
 			<Toaster position="top-center" />
 		</BrowserRouter>
