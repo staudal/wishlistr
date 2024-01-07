@@ -18,8 +18,23 @@ export const wishlistSchema = z.object({
 			img_url: z.string(),
 			created_at: z.date(),
 			quantity: z.number(),
+			wishlist_id: z.string(),
 		})
 	),
 });
 
 export type Wishlist = z.infer<typeof wishlistSchema>;
+
+export const wishSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	description: z.string(),
+	price: z.number(),
+	link_url: z.string(),
+	img_url: z.string(),
+	created_at: z.date(),
+	quantity: z.number(),
+	wishlist_id: z.string(),
+});
+
+export type Wish = z.infer<typeof wishSchema>;

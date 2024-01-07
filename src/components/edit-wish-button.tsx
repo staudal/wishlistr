@@ -25,13 +25,14 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { Textarea } from './ui/textarea';
-import { PlusIcon } from 'lucide-react';
+import { EditIcon } from 'lucide-react';
+import { Wish } from '@/data/schema';
 
 interface Props {
-	wishlist_id: string;
+	wish: Wish;
 }
 
-export function AddWishButton({ wishlist_id }: Props) {
+export function EditWishButton({ wish }: Props) {
 	const [open, setOpen] = useState(false);
 	const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -44,18 +45,18 @@ export function AddWishButton({ wishlist_id }: Props) {
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogTrigger asChild>
 					<Button size="default" variant="default">
-						<PlusIcon className="w-4 h-4 mr-1" />
-						Add wish
+						<EditIcon className="w-4 h-4 mr-1" />
+						Edit
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
-						<DialogTitle>Create a new wish</DialogTitle>
+						<DialogTitle>Edit wish: {wish.title}</DialogTitle>
 						<DialogDescription>
-							Fill in the form below to create a new wish.
+							Fill in the form below to edit this wish.
 						</DialogDescription>
 					</DialogHeader>
-					<WishForm wishlist_id={wishlist_id} onClose={onClose} />
+					<WishForm wish={wish} onClose={onClose} />
 				</DialogContent>
 			</Dialog>
 		);
@@ -65,18 +66,16 @@ export function AddWishButton({ wishlist_id }: Props) {
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
 				<Button size="default" variant="default">
-					<PlusIcon className="w-4 h-4 mr-1" />
-					Add wish
+					<EditIcon className="w-4 h-4 mr-1" />
+					Edit wish
 				</Button>
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader className="text-left">
-					<DrawerTitle>Create a new wish</DrawerTitle>
-					<DrawerDescription>
-						Fill in the form below to create a new wish.
-					</DrawerDescription>
+					<DrawerTitle>Edit wish: {wish.title}</DrawerTitle>
+					<DrawerDescription>Fill in the form below to edit this wish.</DrawerDescription>
 				</DrawerHeader>
-				<WishForm wishlist_id={wishlist_id} onClose={onClose} className="px-4" />
+				<WishForm wish={wish} onClose={onClose} className="px-4" />
 				<DrawerFooter className="pt-2">
 					<DrawerClose asChild>
 						<Button variant="outline">Cancel</Button>
@@ -90,17 +89,17 @@ export function AddWishButton({ wishlist_id }: Props) {
 interface WishFormProps {
 	className?: string;
 	onClose: () => void;
-	wishlist_id: string;
+	wish: Wish;
 }
 
-function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
+function WishForm({ className, onClose, wish }: WishFormProps) {
 	const { wishlists, setWishlists } = useStore();
-	const [title, setTitle] = useState('');
-	const [description, setDescription] = useState('');
-	const [quantity, setQuantity] = useState('');
-	const [price, setPrice] = useState('');
-	const [link, setLink] = useState('');
-	const [image, setImage] = useState('');
+	const [title, setTitle] = useState(wish.title);
+	const [description, setDescription] = useState(wish.description);
+	const [quantity, setQuantity] = useState(wish.quantity.toString());
+	const [price, setPrice] = useState(wish.price.toString());
+	const [link, setLink] = useState(wish.link_url);
+	const [image, setImage] = useState(wish.img_url);
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -190,34 +189,39 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 			setImage('');
 		}
 
-		const { data, error } = await supabase
-			.from('wishes')
-			.insert([
-				{
-					title,
-					description,
-					quantity,
-					price,
-					link_url: link,
-					img_url: image,
-					wishlist_id,
-				},
-			])
-			.select('*');
+		const updatedWish = {
+			title,
+			description,
+			quantity: Number(quantity),
+			price: Number(price),
+			link_url: link,
+			img_url: image,
+			wishlist_id: wish.wishlist_id,
+		};
+
+		const { error } = await supabase.from('wishes').update(updatedWish).eq('id', wish.id);
+
 		if (error) {
-			toast.error('Error creating wishlist');
-		} else if (data) {
-			toast.success('Wishlist created');
-			onClose();
-			const updatedWishlists = wishlists.map(wishlist => {
-				if (wishlist.id === wishlist_id) {
-					return { ...wishlist, wishes: [...wishlist.wishes, data[0]] };
-				}
-				return wishlist;
-			});
-			setWishlists(updatedWishlists);
+			console.error('Error updating wish:', error);
+			toast.error('Failed to update wish');
 		} else {
-			console.log('No data or error');
+			// Update the local state to reflect the changes
+			const updatedWishlists = wishlists.map(wishlist => {
+				if (wishlist.id === wish.wishlist_id) {
+					return {
+						...wishlist,
+						wishes: wishlist.wishes.map(w =>
+							w.id === wish.id ? { ...w, ...updatedWish } : w
+						),
+					};
+				} else {
+					return wishlist;
+				}
+			});
+
+			setWishlists(updatedWishlists);
+			toast.success('Wish updated successfully');
+			onClose();
 		}
 	}
 
@@ -230,6 +234,7 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 					type="text"
 					id="title"
 					placeholder="AirPods Pro"
+					defaultValue={wish.title}
 				/>
 			</div>
 			<div className="grid gap-2">
@@ -238,6 +243,7 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 					onChange={e => setDescription(e.target.value)}
 					id="description"
 					placeholder="The second generation with the MagSafe charging case"
+					defaultValue={wish.description}
 				/>
 			</div>
 			<div className="grid grid-cols-2 gap-4">
@@ -248,6 +254,7 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 						type="number"
 						id="quantity"
 						placeholder="4"
+						defaultValue={wish.quantity}
 					/>
 				</div>
 				<div className="grid gap-2">
@@ -257,6 +264,7 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 						type="number"
 						id="price"
 						placeholder="279"
+						defaultValue={wish.price}
 					/>
 				</div>
 			</div>
@@ -267,6 +275,7 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 					type="text"
 					id="title"
 					placeholder="https://www.apple.com/airpods-pro/"
+					defaultValue={wish.link_url}
 				/>
 			</div>
 			<div className="grid gap-2">
@@ -276,9 +285,10 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 					type="text"
 					id="title"
 					placeholder="https://www.apple.com/airpods-pro/image.png"
+					defaultValue={wish.img_url}
 				/>
 			</div>
-			<Button type="submit">Create wish</Button>
+			<Button type="submit">Update</Button>
 		</form>
 	);
 }
