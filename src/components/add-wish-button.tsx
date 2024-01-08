@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn, supabase } from '@/lib/utils';
 import { useMediaQuery } from 'usehooks-ts';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -14,7 +13,6 @@ import {
 	Drawer,
 	DrawerClose,
 	DrawerContent,
-	DrawerDescription,
 	DrawerFooter,
 	DrawerHeader,
 	DrawerTitle,
@@ -26,6 +24,13 @@ import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { Textarea } from './ui/textarea';
 import { PlusIcon } from 'lucide-react';
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from './ui/carousel';
 
 interface Props {
 	wishlist_id: string;
@@ -51,9 +56,6 @@ export function AddWishButton({ wishlist_id }: Props) {
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle>Create a new wish</DialogTitle>
-						<DialogDescription>
-							Fill in the form below to create a new wish.
-						</DialogDescription>
 					</DialogHeader>
 					<WishForm wishlist_id={wishlist_id} onClose={onClose} />
 				</DialogContent>
@@ -72,9 +74,6 @@ export function AddWishButton({ wishlist_id }: Props) {
 			<DrawerContent>
 				<DrawerHeader className="text-left">
 					<DrawerTitle>Create a new wish</DrawerTitle>
-					<DrawerDescription>
-						Fill in the form below to create a new wish.
-					</DrawerDescription>
 				</DrawerHeader>
 				<WishForm wishlist_id={wishlist_id} onClose={onClose} className="px-4" />
 				<DrawerFooter className="pt-2">
@@ -93,6 +92,10 @@ interface WishFormProps {
 	wishlist_id: string;
 }
 
+type Image = {
+	src: string;
+};
+
 function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 	const { wishlists, setWishlists } = useStore();
 	const [title, setTitle] = useState('');
@@ -101,6 +104,30 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 	const [price, setPrice] = useState('');
 	const [link, setLink] = useState('');
 	const [image, setImage] = useState('');
+	const [fetchedImages, setFetchedImages] = useState<Image[]>([]);
+	const [loadingImages, setLoadingImages] = useState(false);
+	const [enterImgManually, setEnterImgManually] = useState(false);
+
+	useEffect(() => {
+		setImage('');
+	}, [enterImgManually]);
+
+	async function handleFetchImages() {
+		if (!link) {
+			toast.error('Please fill in the link field');
+			return;
+		}
+
+		setLoadingImages(true);
+
+		fetch('http://localhost:3000/images?url=' + link)
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				setFetchedImages(data);
+				setLoadingImages(false);
+			});
+	}
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -271,12 +298,63 @@ function WishForm({ className, onClose, wishlist_id }: WishFormProps) {
 			</div>
 			<div className="grid gap-2">
 				<Label htmlFor="title">Image URL</Label>
-				<Input
-					onChange={e => setImage(e.target.value)}
-					type="text"
-					id="title"
-					placeholder="https://www.apple.com/airpods-pro/image.png"
-				/>
+				{enterImgManually && (
+					<div className="grid grid-cols-4 gap-2">
+						<Input
+							onChange={e => setImage(e.target.value)}
+							type="text"
+							id="title"
+							placeholder="https://www.apple.com/airpods-pro/image.png"
+							className="col-span-3"
+						/>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setEnterImgManually(false)}
+						>
+							Back
+						</Button>
+					</div>
+				)}
+				{!enterImgManually && (
+					<div className="grid grid-cols-2 gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setEnterImgManually(true)}
+						>
+							Enter manually
+						</Button>
+						<Button type="button" variant="outline" onClick={handleFetchImages}>
+							{loadingImages ? 'Loading...' : 'Get images from link'}
+						</Button>
+					</div>
+				)}
+				{fetchedImages.length > 0 && (
+					<Carousel className="w-full max-w-[377px] px-12">
+						<CarouselContent>
+							{fetchedImages.map((img, index) => (
+								<CarouselItem key={index} className="basis-1/2">
+									<div
+										onClick={() => {
+											setImage(img.src);
+										}}
+									>
+										<img
+											src={img.src}
+											alt=""
+											className={`w-full rounded-lg ${
+												image === img.src ? 'border-2 border-blue-500' : ''
+											}`}
+										/>
+									</div>
+								</CarouselItem>
+							))}
+						</CarouselContent>
+						<CarouselPrevious />
+						<CarouselNext />
+					</Carousel>
+				)}
 			</div>
 			<Button type="submit">Create wish</Button>
 		</form>

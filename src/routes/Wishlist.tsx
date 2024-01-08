@@ -58,7 +58,7 @@ export default function WishlistRoute() {
 					) : (
 						<EditIcon className="w-4 h-4 mr-1" />
 					)}
-					{isEditMode ? 'Done' : 'Modify'}
+					{isEditMode ? 'Done' : 'Edit wishes'}
 				</Button>
 			</div>
 			<div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
