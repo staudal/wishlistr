@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -14,7 +13,6 @@ import {
 	Drawer,
 	DrawerClose,
 	DrawerContent,
-	DrawerDescription,
 	DrawerFooter,
 	DrawerHeader,
 	DrawerTitle,
@@ -25,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { Textarea } from './ui/textarea';
-import { BadgeCheck, Check, EditIcon } from 'lucide-react';
+import { Check, EditIcon } from 'lucide-react';
 import { Wish } from '@/data/schema';
 import { ReloadIcon } from '@radix-ui/react-icons';
 

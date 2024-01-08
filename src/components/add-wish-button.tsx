@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { Textarea } from './ui/textarea';
-import { BadgePlus, CheckIcon, PlusIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon } from 'lucide-react';
 import { ReloadIcon } from '@radix-ui/react-icons';
 
 interface Props {
