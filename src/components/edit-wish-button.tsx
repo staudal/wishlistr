@@ -25,8 +25,9 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useStore } from '@/data/store';
 import { Textarea } from './ui/textarea';
-import { EditIcon } from 'lucide-react';
+import { BadgeCheck, Check, EditIcon } from 'lucide-react';
 import { Wish } from '@/data/schema';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
 interface Props {
 	wish: Wish;
@@ -45,16 +46,13 @@ export function EditWishButton({ wish }: Props) {
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogTrigger asChild>
 					<Button size="default" variant="default">
-						<EditIcon className="w-4 h-4 mr-1" />
+						<EditIcon className="mr-2 h-4 w-4" />
 						Edit
 					</Button>
 				</DialogTrigger>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle>Edit wish: {wish.title}</DialogTitle>
-						<DialogDescription>
-							Fill in the form below to edit this wish.
-						</DialogDescription>
 					</DialogHeader>
 					<WishForm wish={wish} onClose={onClose} />
 				</DialogContent>
@@ -66,14 +64,13 @@ export function EditWishButton({ wish }: Props) {
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerTrigger asChild>
 				<Button size="default" variant="default">
-					<EditIcon className="w-4 h-4 mr-1" />
-					Edit wish
+					<EditIcon className="mr-2 h-4 w-4" />
+					Edit
 				</Button>
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader className="text-left">
 					<DrawerTitle>Edit wish: {wish.title}</DrawerTitle>
-					<DrawerDescription>Fill in the form below to edit this wish.</DrawerDescription>
 				</DrawerHeader>
 				<WishForm wish={wish} onClose={onClose} className="px-4" />
 				<DrawerFooter className="pt-2">
@@ -100,6 +97,7 @@ function WishForm({ className, onClose, wish }: WishFormProps) {
 	const [price, setPrice] = useState(wish.price.toString());
 	const [link, setLink] = useState(wish.link_url);
 	const [image, setImage] = useState(wish.img_url);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -189,6 +187,8 @@ function WishForm({ className, onClose, wish }: WishFormProps) {
 			setImage('');
 		}
 
+		setIsSubmitting(true);
+
 		const updatedWish = {
 			title,
 			description,
@@ -204,6 +204,7 @@ function WishForm({ className, onClose, wish }: WishFormProps) {
 		if (error) {
 			console.error('Error updating wish:', error);
 			toast.error('Failed to update wish');
+			setIsSubmitting(false);
 		} else {
 			// Update the local state to reflect the changes
 			const updatedWishlists = wishlists.map(wishlist => {
@@ -218,10 +219,10 @@ function WishForm({ className, onClose, wish }: WishFormProps) {
 					return wishlist;
 				}
 			});
-
 			setWishlists(updatedWishlists);
 			toast.success('Wish updated successfully');
 			onClose();
+			setIsSubmitting(false);
 		}
 	}
 
@@ -288,7 +289,17 @@ function WishForm({ className, onClose, wish }: WishFormProps) {
 					defaultValue={wish.img_url}
 				/>
 			</div>
-			<Button type="submit">Update</Button>
+			{isSubmitting ? (
+				<Button type="submit" disabled>
+					<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+					Please wait
+				</Button>
+			) : (
+				<Button type="submit">
+					<Check className="mr-2 h-4 w-4" />
+					Update wish
+				</Button>
+			)}
 		</form>
 	);
 }

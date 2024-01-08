@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/utils';
 import { toast } from 'sonner';
 import { EditWishButton } from '@/components/edit-wish-button';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
 export default function WishlistRoute() {
 	const { wishlists, setWishlists } = useStore();
@@ -15,37 +16,42 @@ export default function WishlistRoute() {
 	const { id } = params;
 	const wishlist = wishlists.find(wishlist => wishlist.id === id);
 	const [isEditMode, setIsEditMode] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState<Record<string, boolean>>({});
 
 	if (!wishlist) {
 		return <p>Wishlist not found.</p>;
 	}
 
 	async function handleDeleteWish(id: string) {
+		// Set isSubmitting to true for this specific wish
+		setIsSubmitting(prevState => ({ ...prevState, [id]: true }));
+
 		const { error } = await supabase.from('wishes').delete().match({ id });
 
 		if (error) {
 			toast.error(error.message);
-			return;
+			setIsSubmitting(prevState => ({ ...prevState, [id]: false }));
+		} else {
+			const updatedWishlists = wishlists.map(wishlist => {
+				// Find the wishlist that contains the wish
+				const wishExistsInWishlist = wishlist.wishes.some(wish => wish.id === id);
+				if (wishExistsInWishlist) {
+					// Return a new object with the same properties as the original wishlist,
+					// but with the wishes array filtered to exclude the deleted wish
+					return {
+						...wishlist,
+						wishes: wishlist.wishes.filter(wish => wish.id !== id),
+					};
+				}
+
+				// If the wish doesn't exist in the current wishlist, return the wishlist as is
+				return wishlist;
+			});
+
+			setWishlists(updatedWishlists);
+			toast.success('Wish deleted.');
+			setIsSubmitting(prevState => ({ ...prevState, [id]: false }));
 		}
-
-		const updatedWishlists = wishlists.map(wishlist => {
-			// Find the wishlist that contains the wish
-			const wishExistsInWishlist = wishlist.wishes.some(wish => wish.id === id);
-			if (wishExistsInWishlist) {
-				// Return a new object with the same properties as the original wishlist,
-				// but with the wishes array filtered to exclude the deleted wish
-				return {
-					...wishlist,
-					wishes: wishlist.wishes.filter(wish => wish.id !== id),
-				};
-			}
-
-			// If the wish doesn't exist in the current wishlist, return the wishlist as is
-			return wishlist;
-		});
-
-		setWishlists(updatedWishlists);
-		toast.success('Wish deleted.');
 	}
 
 	return (
@@ -54,11 +60,11 @@ export default function WishlistRoute() {
 				<AddWishButton wishlist_id={wishlist.id} />
 				<Button variant="secondary" onClick={() => setIsEditMode(!isEditMode)}>
 					{isEditMode ? (
-						<CheckIcon className="w-4 h-4 mr-1" />
+						<CheckIcon className="w-4 h-4 mr-2" />
 					) : (
-						<EditIcon className="w-4 h-4 mr-1" />
+						<EditIcon className="w-4 h-4 mr-2" />
 					)}
-					{isEditMode ? 'Done' : 'Edit wishes'}
+					{isEditMode ? 'Done' : 'Edit'}
 				</Button>
 			</div>
 			<div className="grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
@@ -73,9 +79,19 @@ export default function WishlistRoute() {
 									<Button
 										variant="destructive"
 										onClick={() => handleDeleteWish(wish.id)}
+										disabled={isSubmitting[wish.id]}
 									>
-										<TrashIcon className="w-4 h-4 mr-1" />
-										<span>Delete</span>
+										{isSubmitting[wish.id] ? (
+											<>
+												<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+												<span>Deleting...</span>
+											</>
+										) : (
+											<>
+												<TrashIcon className="w-4 h-4 mr-2" />
+												<span>Delete</span>
+											</>
+										)}
 									</Button>
 								</div>
 							</div>
